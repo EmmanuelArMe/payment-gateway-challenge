@@ -29,6 +29,13 @@ backend/generated/
 # Logs
 *.log
 
+# Temp/debug files
+_*.*
+_*
+
+# PDF docs
+*.pdf
+
 # Misc
 nul
 *.pdf

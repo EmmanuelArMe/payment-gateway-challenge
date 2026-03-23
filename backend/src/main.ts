@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
@@ -26,7 +27,18 @@ async function bootstrap() {
   );
 
   const port = process.env.PORT ?? 3000;
+
+  // Swagger / OpenAPI
+  const config = new DocumentBuilder()
+    .setTitle('Payment Gateway API')
+    .setDescription('REST API for the payment checkout challenge. Resources: products (stock), transactions, customers, deliveries.')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
   await app.listen(port);
   console.log(`Backend running on http://localhost:${port}`);
+  console.log(`Swagger docs at  http://localhost:${port}/api/docs`);
 }
 bootstrap();

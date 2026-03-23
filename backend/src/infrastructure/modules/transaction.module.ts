@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TransactionController } from '../controllers/transaction.controller.js';
 import { CreateTransactionUseCase } from '../../application/use-cases/create-transaction.use-case.js';
 import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case.js';
+import { GetTransactionUseCase } from '../../application/use-cases/get-transaction.use-case.js';
 import { TransactionPrismaRepository } from '../adapters/persistence/transaction.repository.js';
 import { CustomerPrismaRepository } from '../adapters/persistence/customer.repository.js';
 import { DeliveryPrismaRepository } from '../adapters/persistence/delivery.repository.js';
@@ -20,6 +21,7 @@ import { ProductPrismaRepository } from '../adapters/persistence/product.reposit
     PrismaService,
     CreateTransactionUseCase,
     ProcessPaymentUseCase,
+    GetTransactionUseCase,
     {
       provide: PRODUCT_REPOSITORY,
       useClass: ProductPrismaRepository,

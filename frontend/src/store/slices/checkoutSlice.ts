@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import type { Transaction, CreditCardInfo, Customer, DeliveryInfo, CheckoutStep } from '../../types';
+import { type Transaction, type CreditCardInfo, type Customer, type DeliveryInfo, CheckoutStep } from '../../types';
 import { api } from '../../services/api';
 
 interface CheckoutState {
@@ -28,7 +28,7 @@ const loadState = (): Partial<CheckoutState> => {
 const savedState = loadState();
 
 const initialState: CheckoutState = {
-  step: (savedState.step as CheckoutStep) || 'PRODUCT',
+  step: (savedState.step as CheckoutStep) || CheckoutStep.PRODUCT,
   quantity: savedState.quantity || 1,
   customer: savedState.customer || null,
   delivery: savedState.delivery || null,
@@ -95,7 +95,7 @@ const checkoutSlice = createSlice({
       state.cardInfo = action.payload;
     },
     resetCheckout: (state) => {
-      state.step = 'PRODUCT' as CheckoutStep;
+      state.step = CheckoutStep.PRODUCT;
       state.quantity = 1;
       state.customer = null;
       state.delivery = null;
@@ -130,7 +130,7 @@ const checkoutSlice = createSlice({
       .addCase(processPayment.fulfilled, (state, action) => {
         state.loading = false;
         state.transaction = action.payload;
-        state.step = 'RESULT' as CheckoutStep;
+        state.step = CheckoutStep.RESULT;
       })
       .addCase(processPayment.rejected, (state, action) => {
         state.loading = false;

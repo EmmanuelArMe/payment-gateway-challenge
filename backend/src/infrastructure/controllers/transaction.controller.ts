@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { CreateTransactionUseCase } from '../../application/use-cases/create-transaction.use-case.js';
 import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case.js';
+import { GetTransactionUseCase } from '../../application/use-cases/get-transaction.use-case.js';
 import { CreateTransactionDto } from '../../application/dtos/create-transaction.dto.js';
 import { ProcessPaymentDto } from '../../application/dtos/process-payment.dto.js';
 
@@ -19,6 +20,7 @@ export class TransactionController {
   constructor(
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly processPaymentUseCase: ProcessPaymentUseCase,
+    private readonly getTransactionUseCase: GetTransactionUseCase,
   ) {}
 
   @Post()
@@ -55,7 +57,12 @@ export class TransactionController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    // This will be implemented with a GetTransactionUseCase
-    return { data: { id, message: 'TODO: implement' } };
+    const result = await this.getTransactionUseCase.execute(id);
+    return result.fold(
+      (transaction) => ({ data: transaction }),
+      (error) => {
+        throw new HttpException(error, HttpStatus.NOT_FOUND);
+      },
+    );
   }
 }
