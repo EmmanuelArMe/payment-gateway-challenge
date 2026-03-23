@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  description String
+  price       Int           // Price in COP (cents not needed for COP)
+  currency    String        @default("COP")
+  stock       Int           @default(0)
+  imageUrl    String        @map("image_url")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  transactions Transaction[]
+
+  @@map("products")
+}
+
+model Customer {
+  id          String        @id @default(uuid())
+  fullName    String        @map("full_name")
+  email       String        @unique
+  phone       String
+  createdAt   DateTime      @default(now()) @map("created_at")
+  transactions Transaction[]
+  deliveries  Delivery[]
+
+  @@map("customers")
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  VOIDED
+  ERROR
+}
+
+model Transaction {
+  id             String            @id @default(uuid())
+  productId      String            @map("product_id")
+  customerId     String            @map("customer_id")
+  quantity       Int               @default(1)
+  amount         Int               // Product price * quantity
+  baseFee        Int               @map("base_fee")
+  deliveryFee    Int               @map("delivery_fee")
+  total          Int               // amount + baseFee + deliveryFee
+  status         TransactionStatus @default(PENDING)
+  wompiReference String?           @map("wompi_reference")
+  paymentMethod  String            @default("CARD") @map("payment_method")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  product        Product           @relation(fields: [productId], references: [id])
+  customer       Customer          @relation(fields: [customerId], references: [id])
+  delivery       Delivery?
+
+  @@map("transactions")
+}
+
+model Delivery {
+  id             String   @id @default(uuid())
+  transactionId  String   @unique @map("transaction_id")
+  customerId     String   @map("customer_id")
+  address        String
+  city           String
+  department     String
+  postalCode     String   @default("") @map("postal_code")
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  customer       Customer    @relation(fields: [customerId], references: [id])
+
+  @@map("deliveries")
+}
