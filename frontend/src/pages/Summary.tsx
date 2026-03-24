@@ -177,7 +177,7 @@ export default function Summary() {
         {/* CVC confirmation */}
         <div className="border-t pt-4">
           <label htmlFor="confirmCvc" className="block text-sm font-medium text-gray-700 mb-1">
-            Confirme su CVC para pagar
+            Confirme su CVC para pagar<span className="text-red-500 ml-0.5">*</span>
           </label>
           <input
             id="confirmCvc"

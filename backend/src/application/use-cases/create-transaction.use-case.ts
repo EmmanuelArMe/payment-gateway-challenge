@@ -52,7 +52,9 @@ export class CreateTransactionUseCase {
     }
 
     let customerId: string;
-    if (!customerResult.value) {
+    if (customerResult.value) {
+      customerId = customerResult.value.id;
+    } else {
       const newCustomerResult = await this.customerRepository.create({
         fullName: dto.customerName,
         email: dto.customerEmail,
@@ -62,8 +64,6 @@ export class CreateTransactionUseCase {
         return Result.fail(newCustomerResult.error);
       }
       customerId = newCustomerResult.value.id;
-    } else {
-      customerId = customerResult.value.id;
     }
 
     // Step 3: Calculate amounts

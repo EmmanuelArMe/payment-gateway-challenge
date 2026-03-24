@@ -7,12 +7,14 @@ import {
   setCardInfo,
 } from '../store/slices/checkoutSlice';
 import type { Customer, DeliveryInfo, CreditCardInfo } from '../types';
-import { detectCardBrand, isValidLuhn, isValidExpiry, isValidCVC, formatCardNumber } from '../utils/card-validator';
+import { detectCardBrand, isValidLuhn, isValidExpiry, isValidCVC, formatCardNumber, isValidEmail, isValidPhone } from '../utils/card-validator';
 import ProgressSteps from './ProgressSteps';
 
 interface FormErrors {
   [key: string]: string;
 }
+
+const RequiredMark = () => <span className="text-red-500 ml-0.5">*</span>;
 
 export default function CheckoutForm() {
   const { productId } = useParams<{ productId: string }>();
@@ -44,30 +46,48 @@ export default function CheckoutForm() {
 
   const [errors, setErrors] = useState<FormErrors>({});
 
+  const validateCustomer = (errs: FormErrors) => {
+    if (!customerData.fullName.trim()) errs.fullName = 'El nombre completo es obligatorio';
+    else if (customerData.fullName.trim().length < 3) errs.fullName = 'Debe tener al menos 3 caracteres';
+
+    if (!customerData.email.trim()) errs.email = 'El email es obligatorio';
+    else if (!isValidEmail(customerData.email)) errs.email = 'Ingresa un email válido (ej: usuario@dominio.com)';
+
+    if (!customerData.phone.trim()) errs.phone = 'El teléfono es obligatorio';
+    else if (!isValidPhone(customerData.phone)) errs.phone = 'Ingresa un número válido (7-10 dígitos)';
+  };
+
+  const validateDelivery = (errs: FormErrors) => {
+    if (!deliveryData.address.trim()) errs.address = 'La dirección es obligatoria';
+    else if (deliveryData.address.trim().length < 5) errs.address = 'Dirección muy corta (mín. 5 caracteres)';
+
+    if (!deliveryData.city.trim()) errs.city = 'La ciudad es obligatoria';
+    if (!deliveryData.department.trim()) errs.department = 'El departamento es obligatorio';
+
+    if (!deliveryData.postalCode.trim()) errs.postalCode = 'El código postal es obligatorio';
+    else if (!/^\d{4,6}$/.test(deliveryData.postalCode.trim())) errs.postalCode = 'Código postal inválido (4-6 dígitos)';
+  };
+
+  const validateCard = (errs: FormErrors) => {
+    const cleanNumber = cardData.number.replaceAll(/\s/g, '');
+    if (!cleanNumber) errs.cardNumber = 'El número de tarjeta es obligatorio';
+    else if (!isValidLuhn(cleanNumber)) errs.cardNumber = 'Número de tarjeta inválido';
+
+    if (!cardData.expMonth || !cardData.expYear) errs.expiry = 'La fecha de expiración es obligatoria';
+    else if (!isValidExpiry(cardData.expMonth, cardData.expYear)) errs.expiry = 'La tarjeta está vencida';
+
+    if (!cardData.cvc) errs.cvc = 'El CVC es obligatorio';
+    else if (!isValidCVC(cardData.cvc)) errs.cvc = 'CVC inválido (3-4 dígitos)';
+
+    if (!cardData.cardHolder.trim()) errs.cardHolder = 'El nombre del titular es obligatorio';
+    else if (cardData.cardHolder.trim().length < 3) errs.cardHolder = 'Debe tener al menos 3 caracteres';
+  };
+
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
-
-    // Customer validation
-    if (!customerData.fullName.trim()) newErrors.fullName = 'Nombre requerido';
-    if (!customerData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email))
-      newErrors.email = 'Email inválido';
-    if (!customerData.phone.trim() || customerData.phone.length < 7)
-      newErrors.phone = 'Teléfono inválido';
-
-    // Delivery validation
-    if (!deliveryData.address.trim()) newErrors.address = 'Dirección requerida';
-    if (!deliveryData.city.trim()) newErrors.city = 'Ciudad requerida';
-    if (!deliveryData.department.trim()) newErrors.department = 'Departamento requerido';
-    if (!deliveryData.postalCode.trim()) newErrors.postalCode = 'Código postal requerido';
-
-    // Card validation
-    const cleanNumber = cardData.number.replaceAll(/\s/g, '');
-    if (!isValidLuhn(cleanNumber)) newErrors.cardNumber = 'Número de tarjeta inválido';
-    if (!isValidExpiry(cardData.expMonth, cardData.expYear))
-      newErrors.expiry = 'Fecha de expiración inválida';
-    if (!isValidCVC(cardData.cvc)) newErrors.cvc = 'CVC inválido';
-    if (!cardData.cardHolder.trim()) newErrors.cardHolder = 'Titular requerido';
-
+    validateCustomer(newErrors);
+    validateDelivery(newErrors);
+    validateCard(newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -103,6 +123,7 @@ export default function CheckoutForm() {
       <ProgressSteps currentStep={1} />
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        <p className="text-xs text-gray-500">Los campos marcados con <span className="text-red-500">*</span> son obligatorios</p>
         {/* Customer Info */}
         <section className="bg-white rounded-2xl shadow-lg p-8">
           <div className="flex items-center gap-3 mb-5">
@@ -113,7 +134,7 @@ export default function CheckoutForm() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Nombre completo<RequiredMark /></label>
               <input
                 id="fullName"
                 type="text"
@@ -127,7 +148,7 @@ export default function CheckoutForm() {
               {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email<RequiredMark /></label>
               <input
                 id="email"
                 type="email"
@@ -141,16 +162,21 @@ export default function CheckoutForm() {
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono<RequiredMark /></label>
               <input
                 id="phone"
                 type="tel"
                 value={customerData.phone}
-                onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replaceAll(/\D/g, '').slice(0, 10);
+                  setCustomerData({ ...customerData, phone: val });
+                }}
                 className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all ${
                   errors.phone ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="3001234567"
+                maxLength={10}
+                inputMode="numeric"
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
@@ -167,7 +193,7 @@ export default function CheckoutForm() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Dirección<RequiredMark /></label>
               <input
                 id="address"
                 type="text"
@@ -181,7 +207,7 @@ export default function CheckoutForm() {
               {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
             </div>
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Ciudad<RequiredMark /></label>
               <input
                 id="city"
                 type="text"
@@ -195,7 +221,7 @@ export default function CheckoutForm() {
               {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
             </div>
             <div>
-              <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">Departamento<RequiredMark /></label>
               <input
                 id="department"
                 type="text"
@@ -209,16 +235,21 @@ export default function CheckoutForm() {
               {errors.department && <p className="text-red-500 text-xs mt-1">{errors.department}</p>}
             </div>
             <div>
-              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">Código postal</label>
+              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">Código postal<RequiredMark /></label>
               <input
                 id="postalCode"
                 type="text"
                 value={deliveryData.postalCode}
-                onChange={(e) => setDeliveryData({ ...deliveryData, postalCode: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replaceAll(/\D/g, '').slice(0, 6);
+                  setDeliveryData({ ...deliveryData, postalCode: val });
+                }}
                 className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all ${
                   errors.postalCode ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="050001"
+                maxLength={6}
+                inputMode="numeric"
               />
               {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}
             </div>
@@ -261,7 +292,7 @@ export default function CheckoutForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">Número de tarjeta</label>
+              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">Número de tarjeta<RequiredMark /></label>
               <input
                 id="cardNumber"
                 type="text"
@@ -280,7 +311,7 @@ export default function CheckoutForm() {
               {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
             </div>
             <div className="md:col-span-2">
-              <label htmlFor="cardHolder" className="block text-sm font-medium text-gray-700 mb-1">Titular de la tarjeta</label>
+              <label htmlFor="cardHolder" className="block text-sm font-medium text-gray-700 mb-1">Titular de la tarjeta<RequiredMark /></label>
               <input
                 id="cardHolder"
                 type="text"
@@ -295,7 +326,7 @@ export default function CheckoutForm() {
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label htmlFor="expMonth" className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+                <label htmlFor="expMonth" className="block text-sm font-medium text-gray-700 mb-1">Mes<RequiredMark /></label>
                 <select
                   id="expMonth"
                   value={cardData.expMonth}
@@ -311,7 +342,7 @@ export default function CheckoutForm() {
                 </select>
               </div>
               <div className="flex-1">
-                <label htmlFor="expYear" className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                <label htmlFor="expYear" className="block text-sm font-medium text-gray-700 mb-1">Año<RequiredMark /></label>
                 <select
                   id="expYear"
                   value={cardData.expYear}
@@ -330,7 +361,7 @@ export default function CheckoutForm() {
               </div>
             </div>
             <div>
-              <label htmlFor="cvc" className="block text-sm font-medium text-gray-700 mb-1">CVC</label>
+              <label htmlFor="cvc" className="block text-sm font-medium text-gray-700 mb-1">CVC<RequiredMark /></label>
               <input
                 id="cvc"
                 type="password"

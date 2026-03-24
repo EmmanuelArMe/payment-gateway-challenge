@@ -63,15 +63,15 @@ describe('CheckoutForm', () => {
 
     fireEvent.click(screen.getByText('Revisar resumen'));
 
-    expect(screen.getByText('Nombre requerido')).toBeInTheDocument();
-    expect(screen.getByText('Email inválido')).toBeInTheDocument();
-    expect(screen.getByText('Teléfono inválido')).toBeInTheDocument();
-    expect(screen.getByText('Dirección requerida')).toBeInTheDocument();
-    expect(screen.getByText('Ciudad requerida')).toBeInTheDocument();
-    expect(screen.getByText('Departamento requerido')).toBeInTheDocument();
-    expect(screen.getByText('Código postal requerido')).toBeInTheDocument();
-    expect(screen.getByText('Número de tarjeta inválido')).toBeInTheDocument();
-    expect(screen.getByText('Titular requerido')).toBeInTheDocument();
+    expect(screen.getByText('El nombre completo es obligatorio')).toBeInTheDocument();
+    expect(screen.getByText('El email es obligatorio')).toBeInTheDocument();
+    expect(screen.getByText('El teléfono es obligatorio')).toBeInTheDocument();
+    expect(screen.getByText('La dirección es obligatoria')).toBeInTheDocument();
+    expect(screen.getByText('La ciudad es obligatoria')).toBeInTheDocument();
+    expect(screen.getByText('El departamento es obligatorio')).toBeInTheDocument();
+    expect(screen.getByText('El código postal es obligatorio')).toBeInTheDocument();
+    expect(screen.getByText('El número de tarjeta es obligatorio')).toBeInTheDocument();
+    expect(screen.getByText('El nombre del titular es obligatorio')).toBeInTheDocument();
   });
 
   it('fills in form and submits successfully', () => {

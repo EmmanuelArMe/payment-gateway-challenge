@@ -4,6 +4,8 @@ import {
   isValidCVC,
   isValidExpiry,
   isValidLuhn,
+  isValidEmail,
+  isValidPhone,
 } from './card-validator';
 
 describe('card-validator', () => {
@@ -38,5 +40,33 @@ describe('card-validator', () => {
     expect(isValidCVC('123')).toBe(true);
     expect(isValidCVC('1234')).toBe(true);
     expect(isValidCVC('12')).toBe(false);
+  });
+
+  describe('isValidEmail', () => {
+    it('accepts valid emails', () => {
+      expect(isValidEmail('user@example.com')).toBe(true);
+      expect(isValidEmail('test.user+tag@domain.co')).toBe(true);
+    });
+
+    it('rejects invalid emails', () => {
+      expect(isValidEmail('')).toBe(false);
+      expect(isValidEmail('user@')).toBe(false);
+      expect(isValidEmail('@domain.com')).toBe(false);
+      expect(isValidEmail('user@domain')).toBe(false);
+      expect(isValidEmail('user domain.com')).toBe(false);
+    });
+  });
+
+  describe('isValidPhone', () => {
+    it('accepts valid phone numbers', () => {
+      expect(isValidPhone('3001234567')).toBe(true);
+      expect(isValidPhone('1234567')).toBe(true);
+    });
+
+    it('rejects invalid phone numbers', () => {
+      expect(isValidPhone('')).toBe(false);
+      expect(isValidPhone('123')).toBe(false);
+      expect(isValidPhone('12345678901')).toBe(false);
+    });
   });
 });
