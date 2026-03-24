@@ -15,7 +15,14 @@ interface ProgressStepsProps {
   currentStep: number; // 0-based: 0=Producto, 1=Datos, 2=Resumen, 3=Resultado
 }
 
-export default function ProgressSteps({ currentStep }: ProgressStepsProps) {
+function getStepStyle(step: number, current: number): string {
+  if (step < current) return 'bg-green-500 text-white';
+  if (step === current)
+    return 'bg-[#5A3E9B] text-white shadow-md shadow-[#5A3E9B]/20';
+  return 'bg-gray-100 text-gray-400 border-2 border-gray-200';
+}
+
+export default function ProgressSteps({ currentStep }: Readonly<ProgressStepsProps>) {
   return (
     <div className="flex items-center justify-center mb-8">
       {stepLabels.map((label, i) => (
@@ -23,11 +30,7 @@ export default function ProgressSteps({ currentStep }: ProgressStepsProps) {
           <div className="flex flex-col items-center">
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                i < currentStep
-                  ? 'bg-green-500 text-white'
-                  : i === currentStep
-                    ? 'bg-[#5A3E9B] text-white shadow-md shadow-[#5A3E9B]/20'
-                    : 'bg-gray-100 text-gray-400 border-2 border-gray-200'
+                getStepStyle(i, currentStep)
               }`}
             >
               {i < currentStep ? (
@@ -48,7 +51,7 @@ export default function ProgressSteps({ currentStep }: ProgressStepsProps) {
           </div>
           {i < 3 && (
             <div
-              className={`w-12 sm:w-16 h-0.5 mx-1 sm:mx-2 mt-[-16px] sm:mt-[-20px] ${
+              className={`w-12 sm:w-16 h-0.5 mx-1 sm:mx-2 -mt-4 sm:-mt-5 ${
                 i < currentStep ? 'bg-green-500' : 'bg-gray-200'
               }`}
             />

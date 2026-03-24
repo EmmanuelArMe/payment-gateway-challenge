@@ -32,13 +32,14 @@ export interface CreditCardInfo {
 
 export type CardBrand = 'visa' | 'mastercard' | 'unknown';
 
-export enum TransactionStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  DECLINED = 'DECLINED',
-  VOIDED = 'VOIDED',
-  ERROR = 'ERROR',
-}
+export const TransactionStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DECLINED: 'DECLINED',
+  VOIDED: 'VOIDED',
+  ERROR: 'ERROR',
+} as const;
+export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus];
 
 export interface Transaction {
   id: string;
@@ -56,12 +57,13 @@ export interface Transaction {
   updatedAt: string;
 }
 
-export enum CheckoutStep {
-  PRODUCT = 'PRODUCT',
-  PAYMENT_INFO = 'PAYMENT_INFO',
-  SUMMARY = 'SUMMARY',
-  RESULT = 'RESULT',
-}
+export const CheckoutStep = {
+  PRODUCT: 'PRODUCT',
+  PAYMENT_INFO: 'PAYMENT_INFO',
+  SUMMARY: 'SUMMARY',
+  RESULT: 'RESULT',
+} as const;
+export type CheckoutStep = (typeof CheckoutStep)[keyof typeof CheckoutStep];
 
 export interface ApiResponse<T> {
   data: T;

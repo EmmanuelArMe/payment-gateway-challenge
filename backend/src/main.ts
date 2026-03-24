@@ -31,7 +31,9 @@ async function bootstrap() {
   // Swagger / OpenAPI
   const config = new DocumentBuilder()
     .setTitle('Payment Gateway API')
-    .setDescription('REST API for the payment checkout challenge. Resources: products (stock), transactions, customers, deliveries.')
+    .setDescription(
+      'REST API for the payment checkout challenge. Resources: products (stock), transactions, customers, deliveries.',
+    )
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
@@ -41,4 +43,4 @@ async function bootstrap() {
   console.log(`Backend running on http://localhost:${port}`);
   console.log(`Swagger docs at  http://localhost:${port}/api/docs`);
 }
-bootstrap();
+void bootstrap(); // NOSONAR: top-level await not supported in CJS (NestJS)

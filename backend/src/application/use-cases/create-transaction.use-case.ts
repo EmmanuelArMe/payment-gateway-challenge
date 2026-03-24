@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Result } from '../../shared/result.js';
-import { Transaction, TransactionStatus } from '../../domain/entities/index.js';
+import { Transaction } from '../../domain/entities/index.js';
 import type { ProductRepositoryPort } from '../../domain/ports/outbound/product.repository.port.js';
 import { PRODUCT_REPOSITORY } from '../../domain/ports/outbound/product.repository.port.js';
 import type { TransactionRepositoryPort } from '../../domain/ports/outbound/transaction.repository.port.js';
@@ -44,7 +44,9 @@ export class CreateTransactionUseCase {
     }
 
     // Step 2: Create or find customer
-    let customerResult = await this.customerRepository.findByEmail(dto.customerEmail);
+    const customerResult = await this.customerRepository.findByEmail(
+      dto.customerEmail,
+    );
     if (customerResult.isFailure) {
       return Result.fail(customerResult.error);
     }

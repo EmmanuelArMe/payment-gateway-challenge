@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import TransactionResult from './TransactionResult';
 import { TransactionStatus } from '../types';
 
@@ -140,5 +140,20 @@ describe('TransactionResult', () => {
     });
 
     jest.useRealTimers();
+  });
+
+  it('navigates home when clicking "Volver a productos"', () => {
+    render(<TransactionResult />);
+
+    fireEvent.click(screen.getByText('Volver a productos'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/');
+  });
+
+  it('falls back to error config for unknown status', () => {
+    mockTransaction = { ...mockTransaction!, status: 'UNKNOWN_STATUS' };
+    render(<TransactionResult />);
+    // Should fall back to ERROR config
+    expect(screen.getByText('Error en el pago')).toBeInTheDocument();
   });
 });

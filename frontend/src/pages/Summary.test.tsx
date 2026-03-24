@@ -51,7 +51,14 @@ jest.mock('react-router', () => ({
 }));
 
 jest.mock('../config', () => ({
-  WOMPI_PUBLIC_KEY: 'pub_test_key_123',
+  API_BASE_URL: 'http://localhost:3000',
+}));
+
+jest.mock('../services/api', () => ({
+  api: {
+    getAcceptanceToken: jest.fn(),
+    tokenizeCard: jest.fn(),
+  },
 }));
 
 jest.mock('../store/slices/checkoutSlice', () => ({
@@ -71,7 +78,6 @@ jest.mock('../store/slices/checkoutSlice', () => ({
 describe('Summary', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn();
   });
 
   afterEach(() => {
@@ -149,20 +155,11 @@ describe('Summary', () => {
   });
 
   it('submits payment when CVC is provided', async () => {
-    mockDispatch.mockResolvedValue({ payload: { id: 'tx-1' } });
+    const { api } = jest.requireMock('../services/api');
 
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        json: () =>
-          Promise.resolve({
-            data: {
-              presigned_acceptance: { acceptance_token: 'accept-token' },
-            },
-          }),
-      })
-      .mockResolvedValueOnce({
-        json: () => Promise.resolve({ data: { id: 'card-token-1' } }),
-      });
+    mockDispatch.mockResolvedValue({ payload: { id: 'tx-1' } });
+    api.getAcceptanceToken.mockResolvedValue({ data: 'accept-token' });
+    api.tokenizeCard.mockResolvedValue({ data: 'card-token-1' });
 
     render(<Summary />);
 

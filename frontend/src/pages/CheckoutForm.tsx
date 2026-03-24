@@ -18,8 +18,8 @@ export default function CheckoutForm() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { selectedProduct: product } = useAppSelector((s) => s.products);
-  const { quantity } = useAppSelector((s) => s.checkout);
+  useAppSelector((s) => s.products);
+  useAppSelector((s) => s.checkout);
 
   const [customerData, setCustomerData] = useState<Customer>({
     fullName: '',
@@ -61,7 +61,7 @@ export default function CheckoutForm() {
     if (!deliveryData.postalCode.trim()) newErrors.postalCode = 'Código postal requerido';
 
     // Card validation
-    const cleanNumber = cardData.number.replace(/\s/g, '');
+    const cleanNumber = cardData.number.replaceAll(/\s/g, '');
     if (!isValidLuhn(cleanNumber)) newErrors.cardNumber = 'Número de tarjeta inválido';
     if (!isValidExpiry(cardData.expMonth, cardData.expYear))
       newErrors.expiry = 'Fecha de expiración inválida';
@@ -72,7 +72,7 @@ export default function CheckoutForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -80,7 +80,7 @@ export default function CheckoutForm() {
     dispatch(setDelivery(deliveryData));
     dispatch(
       setCardInfo({
-        number: cardData.number.replace(/\s/g, ''),
+        number: cardData.number.replaceAll(/\s/g, ''),
         expMonth: cardData.expMonth,
         expYear: cardData.expYear,
         cardHolder: cardData.cardHolder,
@@ -113,8 +113,9 @@ export default function CheckoutForm() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
               <input
+                id="fullName"
                 type="text"
                 value={customerData.fullName}
                 onChange={(e) => setCustomerData({ ...customerData, fullName: e.target.value })}
@@ -126,8 +127,9 @@ export default function CheckoutForm() {
               {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
+                id="email"
                 type="email"
                 value={customerData.email}
                 onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
@@ -139,8 +141,9 @@ export default function CheckoutForm() {
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
               <input
+                id="phone"
                 type="tel"
                 value={customerData.phone}
                 onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
@@ -164,8 +167,9 @@ export default function CheckoutForm() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
               <input
+                id="address"
                 type="text"
                 value={deliveryData.address}
                 onChange={(e) => setDeliveryData({ ...deliveryData, address: e.target.value })}
@@ -177,8 +181,9 @@ export default function CheckoutForm() {
               {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
               <input
+                id="city"
                 type="text"
                 value={deliveryData.city}
                 onChange={(e) => setDeliveryData({ ...deliveryData, city: e.target.value })}
@@ -190,8 +195,9 @@ export default function CheckoutForm() {
               {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
               <input
+                id="department"
                 type="text"
                 value={deliveryData.department}
                 onChange={(e) => setDeliveryData({ ...deliveryData, department: e.target.value })}
@@ -203,8 +209,9 @@ export default function CheckoutForm() {
               {errors.department && <p className="text-red-500 text-xs mt-1">{errors.department}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Código postal</label>
+              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">Código postal</label>
               <input
+                id="postalCode"
                 type="text"
                 value={deliveryData.postalCode}
                 onChange={(e) => setDeliveryData({ ...deliveryData, postalCode: e.target.value })}
@@ -228,11 +235,11 @@ export default function CheckoutForm() {
           </div>
 
           {/* Card Preview */}
-          <div className="bg-gradient-to-br from-[#432C7A] to-[#5A3E9B] rounded-xl p-6 text-white mb-6 max-w-sm">
+          <div className="bg-linear-to-br from-[#432C7A] to-[#5A3E9B] rounded-xl p-6 text-white mb-6 max-w-sm">
             <div className="flex justify-between items-start mb-8">
               <span className="text-xs opacity-75">Tarjeta de crédito</span>
               <span className="text-sm font-bold uppercase">
-                {cardBrand !== 'unknown' ? cardBrand : ''}
+                {cardBrand === 'unknown' ? '' : cardBrand}
               </span>
             </div>
             <p className="text-lg tracking-widest mb-6 font-mono">
@@ -254,12 +261,13 @@ export default function CheckoutForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Número de tarjeta</label>
+              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">Número de tarjeta</label>
               <input
+                id="cardNumber"
                 type="text"
                 value={formatCardNumber(cardData.number)}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+                  const raw = e.target.value.replaceAll(/\D/g, '').slice(0, 16);
                   setCardData({ ...cardData, number: raw });
                 }}
                 className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all font-mono ${
@@ -272,8 +280,9 @@ export default function CheckoutForm() {
               {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titular de la tarjeta</label>
+              <label htmlFor="cardHolder" className="block text-sm font-medium text-gray-700 mb-1">Titular de la tarjeta</label>
               <input
+                id="cardHolder"
                 type="text"
                 value={cardData.cardHolder}
                 onChange={(e) => setCardData({ ...cardData, cardHolder: e.target.value.toUpperCase() })}
@@ -286,8 +295,9 @@ export default function CheckoutForm() {
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+                <label htmlFor="expMonth" className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
                 <select
+                  id="expMonth"
                   value={cardData.expMonth}
                   onChange={(e) => setCardData({ ...cardData, expMonth: e.target.value })}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all ${
@@ -301,8 +311,9 @@ export default function CheckoutForm() {
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                <label htmlFor="expYear" className="block text-sm font-medium text-gray-700 mb-1">Año</label>
                 <select
+                  id="expYear"
                   value={cardData.expYear}
                   onChange={(e) => setCardData({ ...cardData, expYear: e.target.value })}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all ${
@@ -319,12 +330,13 @@ export default function CheckoutForm() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">CVC</label>
+              <label htmlFor="cvc" className="block text-sm font-medium text-gray-700 mb-1">CVC</label>
               <input
+                id="cvc"
                 type="password"
                 value={cardData.cvc}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  const raw = e.target.value.replaceAll(/\D/g, '').slice(0, 4);
                   setCardData({ ...cardData, cvc: raw });
                 }}
                 className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all ${

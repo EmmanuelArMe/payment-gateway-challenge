@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service.js';
-import { TransactionRepositoryPort, CreateTransactionData } from '../../../domain/ports/outbound/transaction.repository.port.js';
-import { Transaction, TransactionStatus } from '../../../domain/entities/index.js';
+import {
+  TransactionRepositoryPort,
+  CreateTransactionData,
+} from '../../../domain/ports/outbound/transaction.repository.port.js';
+import {
+  Transaction,
+  TransactionStatus,
+} from '../../../domain/entities/index.js';
 import { Result } from '../../../shared/result.js';
 
 @Injectable()
@@ -24,7 +30,7 @@ export class TransactionPrismaRepository implements TransactionRepositoryPort {
         },
       });
       return Result.ok(this.toDomain(tx));
-    } catch (error) {
+    } catch {
       return Result.fail('Failed to create transaction');
     }
   }
@@ -34,7 +40,7 @@ export class TransactionPrismaRepository implements TransactionRepositoryPort {
       const tx = await this.prisma.transaction.findUnique({ where: { id } });
       if (!tx) return Result.ok(null);
       return Result.ok(this.toDomain(tx));
-    } catch (error) {
+    } catch {
       return Result.fail('Failed to fetch transaction');
     }
   }
@@ -53,7 +59,7 @@ export class TransactionPrismaRepository implements TransactionRepositoryPort {
         data,
       });
       return Result.ok(this.toDomain(tx));
-    } catch (error) {
+    } catch {
       return Result.fail('Failed to update transaction');
     }
   }

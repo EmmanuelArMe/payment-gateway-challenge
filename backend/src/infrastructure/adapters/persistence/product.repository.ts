@@ -28,7 +28,7 @@ export class ProductPrismaRepository implements ProductRepositoryPort {
             ),
         ),
       );
-    } catch (error) {
+    } catch {
       return Result.fail('Failed to fetch products');
     }
   }
@@ -38,9 +38,18 @@ export class ProductPrismaRepository implements ProductRepositoryPort {
       const p = await this.prisma.product.findUnique({ where: { id } });
       if (!p) return Result.ok(null);
       return Result.ok(
-        new Product(p.id, p.name, p.description, p.price, p.currency, p.stock, p.imageUrl, p.createdAt),
+        new Product(
+          p.id,
+          p.name,
+          p.description,
+          p.price,
+          p.currency,
+          p.stock,
+          p.imageUrl,
+          p.createdAt,
+        ),
       );
-    } catch (error) {
+    } catch {
       return Result.fail('Failed to fetch product');
     }
   }
@@ -52,9 +61,18 @@ export class ProductPrismaRepository implements ProductRepositoryPort {
         data: { stock: { increment: quantity } },
       });
       return Result.ok(
-        new Product(p.id, p.name, p.description, p.price, p.currency, p.stock, p.imageUrl, p.createdAt),
+        new Product(
+          p.id,
+          p.name,
+          p.description,
+          p.price,
+          p.currency,
+          p.stock,
+          p.imageUrl,
+          p.createdAt,
+        ),
       );
-    } catch (error) {
+    } catch {
       return Result.fail('Failed to update stock');
     }
   }

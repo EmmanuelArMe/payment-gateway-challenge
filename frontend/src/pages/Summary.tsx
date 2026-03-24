@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router';
 import { useAppDispatch, useAppSelector } from '../hooks/useStore';
 import { createTransaction, processPayment } from '../store/slices/checkoutSlice';
 import { formatCurrency, maskCardNumber } from '../utils/formatters';
-import { WOMPI_PUBLIC_KEY } from '../config';
+import { api } from '../services/api';
 import ProgressSteps from './ProgressSteps';
 
 export default function Summary() {
@@ -56,35 +56,19 @@ export default function Summary() {
     // Step 2: Tokenize card via backend (which calls Wompi)
 
     // Get acceptance token
-    const acceptResponse = await fetch(
-      `https://api-sandbox.co.uat.wompi.dev/v1/merchants/${encodeURIComponent(WOMPI_PUBLIC_KEY)}`,
-    );
-    const acceptData = (await acceptResponse.json()) as {
-      data?: { presigned_acceptance?: { acceptance_token?: string } };
-    };
-    const acceptanceToken = acceptData?.data?.presigned_acceptance?.acceptance_token;
+    const acceptResult = await api.getAcceptanceToken();
+    const acceptanceToken = acceptResult?.data;
     if (!acceptanceToken) return;
 
     // Tokenize card
-    const tokenResponse = await fetch(
-      'https://api-sandbox.co.uat.wompi.dev/v1/tokens/cards',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${WOMPI_PUBLIC_KEY}`,
-        },
-        body: JSON.stringify({
-          number: cardInfo.number,
-          cvc: cardCvc,
-          exp_month: cardInfo.expMonth,
-          exp_year: cardInfo.expYear,
-          card_holder: cardInfo.cardHolder,
-        }),
-      },
-    );
-    const tokenData = (await tokenResponse.json()) as { data?: { id?: string } };
-    const cardToken = tokenData?.data?.id;
+    const tokenResult = await api.tokenizeCard({
+      number: cardInfo.number,
+      cvc: cardCvc,
+      expMonth: cardInfo.expMonth,
+      expYear: cardInfo.expYear,
+      cardHolder: cardInfo.cardHolder,
+    });
+    const cardToken = tokenResult?.data;
     if (!cardToken) return;
 
     // Step 3: Process payment
@@ -192,14 +176,15 @@ export default function Summary() {
 
         {/* CVC confirmation */}
         <div className="border-t pt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="confirmCvc" className="block text-sm font-medium text-gray-700 mb-1">
             Confirme su CVC para pagar
           </label>
           <input
+            id="confirmCvc"
             type="password"
             value={cardCvc}
             onChange={(e) => {
-              setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4));
+              setCardCvc(e.target.value.replaceAll(/\D/g, '').slice(0, 4));
               setCvcError('');
             }}
             className={`w-32 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#5A3E9B] focus:border-transparent outline-none transition-all ${
@@ -215,7 +200,7 @@ export default function Summary() {
       </div>
 
       {/* Totals */}
-      <div className="bg-gradient-to-br from-gray-50 to-[#5A3E9B]/5 rounded-2xl shadow-lg p-6 mb-6">
+      <div className="bg-linear-to-br from-gray-50 to-[#5A3E9B]/5 rounded-2xl shadow-lg p-6 mb-6">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">Subtotal ({quantity} × {formatCurrency(product.price)})</span>

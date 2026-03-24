@@ -32,7 +32,9 @@ export class ProcessPaymentUseCase {
 
   async execute(input: ProcessPaymentInput): Promise<Result<Transaction>> {
     // Step 1: Get transaction
-    const txResult = await this.transactionRepository.findById(input.transactionId);
+    const txResult = await this.transactionRepository.findById(
+      input.transactionId,
+    );
     if (txResult.isFailure) return Result.fail(txResult.error);
     if (!txResult.value) return Result.fail('Transaction not found');
 
@@ -70,7 +72,8 @@ export class ProcessPaymentUseCase {
       PENDING: TransactionStatus.PENDING,
     };
 
-    const newStatus = statusMap[wompiTransaction.status] || TransactionStatus.PENDING;
+    const newStatus =
+      statusMap[wompiTransaction.status] || TransactionStatus.PENDING;
 
     // Step 4: Update transaction with result
     const updateResult = await this.transactionRepository.updateStatus(
@@ -87,9 +90,14 @@ export class ProcessPaymentUseCase {
         transaction.productId,
         -transaction.quantity,
       );
-      const deliveryResult = await this.deliveryRepository.findByTransactionId(transaction.id);
+      const deliveryResult = await this.deliveryRepository.findByTransactionId(
+        transaction.id,
+      );
       if (deliveryResult.isSuccess && deliveryResult.value) {
-        await this.deliveryRepository.updateStatus(deliveryResult.value.id, 'ASSIGNED');
+        await this.deliveryRepository.updateStatus(
+          deliveryResult.value.id,
+          'ASSIGNED',
+        );
       }
     }
 

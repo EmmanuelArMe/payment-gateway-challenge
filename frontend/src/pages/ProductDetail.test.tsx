@@ -86,15 +86,17 @@ describe('ProductDetail', () => {
   it('increments and decrements quantity', () => {
     render(<ProductDetail />);
 
+    const quantityInput = screen.getByRole('spinbutton', { name: /cantidad/i });
+
     const incrementBtn = screen.getByText('+');
     fireEvent.click(incrementBtn);
 
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(quantityInput).toHaveValue(2);
 
     const decrementBtn = screen.getByText('−');
     fireEvent.click(decrementBtn);
 
-    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(quantityInput).toHaveValue(1);
   });
 
   it('navigates to checkout on continue click', () => {

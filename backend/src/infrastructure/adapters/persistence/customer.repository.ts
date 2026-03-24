@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service.js';
-import { CustomerRepositoryPort, CreateCustomerData } from '../../../domain/ports/outbound/customer.repository.port.js';
+import {
+  CustomerRepositoryPort,
+  CreateCustomerData,
+} from '../../../domain/ports/outbound/customer.repository.port.js';
 import { Customer } from '../../../domain/entities/index.js';
 import { Result } from '../../../shared/result.js';
 
@@ -17,8 +20,10 @@ export class CustomerPrismaRepository implements CustomerRepositoryPort {
           phone: data.phone,
         },
       });
-      return Result.ok(new Customer(c.id, c.fullName, c.email, c.phone, c.createdAt));
-    } catch (error) {
+      return Result.ok(
+        new Customer(c.id, c.fullName, c.email, c.phone, c.createdAt),
+      );
+    } catch {
       return Result.fail('Failed to create customer');
     }
   }
@@ -27,8 +32,10 @@ export class CustomerPrismaRepository implements CustomerRepositoryPort {
     try {
       const c = await this.prisma.customer.findUnique({ where: { id } });
       if (!c) return Result.ok(null);
-      return Result.ok(new Customer(c.id, c.fullName, c.email, c.phone, c.createdAt));
-    } catch (error) {
+      return Result.ok(
+        new Customer(c.id, c.fullName, c.email, c.phone, c.createdAt),
+      );
+    } catch {
       return Result.fail('Failed to fetch customer');
     }
   }
@@ -37,8 +44,10 @@ export class CustomerPrismaRepository implements CustomerRepositoryPort {
     try {
       const c = await this.prisma.customer.findUnique({ where: { email } });
       if (!c) return Result.ok(null);
-      return Result.ok(new Customer(c.id, c.fullName, c.email, c.phone, c.createdAt));
-    } catch (error) {
+      return Result.ok(
+        new Customer(c.id, c.fullName, c.email, c.phone, c.createdAt),
+      );
+    } catch {
       return Result.fail('Failed to fetch customer');
     }
   }

@@ -43,7 +43,9 @@ describe('Result', () => {
 
     it('should throw when accessing error on success', () => {
       const result = Result.ok('value');
-      expect(() => result.error).toThrow('Cannot get error of a successful result');
+      expect(() => result.error).toThrow(
+        'Cannot get error of a successful result',
+      );
     });
   });
 

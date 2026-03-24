@@ -1,5 +1,14 @@
-import { Controller, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
-import { GetProductsUseCase, GetProductByIdUseCase } from '../../application/use-cases/get-products.use-case.js';
+import {
+  Controller,
+  Get,
+  Param,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  GetProductsUseCase,
+  GetProductByIdUseCase,
+} from '../../application/use-cases/get-products.use-case.js';
 
 @Controller('api/products')
 export class ProductController {

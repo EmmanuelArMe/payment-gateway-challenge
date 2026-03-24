@@ -1,14 +1,36 @@
-import { GetProductsUseCase, GetProductByIdUseCase } from './get-products.use-case';
+import {
+  GetProductsUseCase,
+  GetProductByIdUseCase,
+} from './get-products.use-case';
 import { Result } from '../../shared/result';
 import { Product } from '../../domain/entities/index';
+import { ProductRepositoryPort } from '../../domain/ports/outbound/index';
 
 describe('GetProductsUseCase', () => {
   let useCase: GetProductsUseCase;
-  let productRepository: any;
+  let productRepository: jest.Mocked<ProductRepositoryPort>;
 
   const mockProducts = [
-    new Product('p1', 'Product 1', 'Desc 1', 50000, 'COP', 10, 'https://img.example.com/1.jpg', new Date()),
-    new Product('p2', 'Product 2', 'Desc 2', 80000, 'COP', 5, 'https://img.example.com/2.jpg', new Date()),
+    new Product(
+      'p1',
+      'Product 1',
+      'Desc 1',
+      50000,
+      'COP',
+      10,
+      'https://img.example.com/1.jpg',
+      new Date(),
+    ),
+    new Product(
+      'p2',
+      'Product 2',
+      'Desc 2',
+      80000,
+      'COP',
+      5,
+      'https://img.example.com/2.jpg',
+      new Date(),
+    ),
   ];
 
   beforeEach(() => {
@@ -51,9 +73,18 @@ describe('GetProductsUseCase', () => {
 
 describe('GetProductByIdUseCase', () => {
   let useCase: GetProductByIdUseCase;
-  let productRepository: any;
+  let productRepository: jest.Mocked<ProductRepositoryPort>;
 
-  const mockProduct = new Product('p1', 'Product 1', 'Desc', 50000, 'COP', 10, 'https://img.example.com/1.jpg', new Date());
+  const mockProduct = new Product(
+    'p1',
+    'Product 1',
+    'Desc',
+    50000,
+    'COP',
+    10,
+    'https://img.example.com/1.jpg',
+    new Date(),
+  );
 
   beforeEach(() => {
     productRepository = {

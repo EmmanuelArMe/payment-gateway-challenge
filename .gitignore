@@ -36,7 +36,12 @@ _*
 # PDF docs
 *.pdf
 
+# Deploy artifacts
+*.zip
+deploy-tmp/
+make-zip.js
+create-deploy-zip.js
+
 # Misc
 nul
-*.pdf
 npm-debug.log*

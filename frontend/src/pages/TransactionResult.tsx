@@ -12,20 +12,19 @@ export default function TransactionResult() {
   const navigate = useNavigate();
   const { transaction: storeTransaction } = useAppSelector((s) => s.checkout);
   const [transaction, setTransaction] = useState<Transaction | null>(storeTransaction);
-  const [polling, setPolling] = useState(false);
+
+  const polling = transaction?.status === TransactionStatus.PENDING;
 
   useEffect(() => {
     if (!transactionId) return;
 
     // If transaction is PENDING, poll for status updates
     if (transaction?.status === TransactionStatus.PENDING) {
-      setPolling(true);
       const interval = setInterval(async () => {
         try {
           const result = await api.getTransaction(transactionId);
           setTransaction(result.data);
           if (result.data.status !== TransactionStatus.PENDING) {
-            setPolling(false);
             clearInterval(interval);
           }
         } catch {
@@ -35,7 +34,6 @@ export default function TransactionResult() {
 
       // Stop polling after 60 seconds
       const timeout = setTimeout(() => {
-        setPolling(false);
         clearInterval(interval);
       }, 60000);
 

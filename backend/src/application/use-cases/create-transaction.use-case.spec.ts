@@ -1,21 +1,69 @@
 import { CreateTransactionUseCase } from './create-transaction.use-case';
 import { Result } from '../../shared/result';
-import { Product, Customer, Transaction, TransactionStatus, Delivery } from '../../domain/entities/index';
+import {
+  Product,
+  Customer,
+  Transaction,
+  TransactionStatus,
+  Delivery,
+} from '../../domain/entities/index';
+import {
+  ProductRepositoryPort,
+  CustomerRepositoryPort,
+  TransactionRepositoryPort,
+  DeliveryRepositoryPort,
+} from '../../domain/ports/outbound/index';
 
 describe('CreateTransactionUseCase', () => {
   let useCase: CreateTransactionUseCase;
-  let productRepository: any;
-  let transactionRepository: any;
-  let customerRepository: any;
-  let deliveryRepository: any;
+  let productRepository: jest.Mocked<ProductRepositoryPort>;
+  let transactionRepository: jest.Mocked<TransactionRepositoryPort>;
+  let customerRepository: jest.Mocked<CustomerRepositoryPort>;
+  let deliveryRepository: jest.Mocked<DeliveryRepositoryPort>;
 
-  const mockProduct = new Product('prod-1', 'Test', 'Desc', 50000, 'COP', 10, 'https://img.example.com/test.jpg', new Date());
-  const mockCustomer = new Customer('cust-1', 'John', 'john@example.com', '300123', new Date());
-  const mockTransaction = new Transaction(
-    'tx-1', 'prod-1', 'cust-1', 1, 50000, 5000, 10000, 65000,
-    TransactionStatus.PENDING, null, 'CARD', new Date(), new Date(),
+  const mockProduct = new Product(
+    'prod-1',
+    'Test',
+    'Desc',
+    50000,
+    'COP',
+    10,
+    'https://img.example.com/test.jpg',
+    new Date(),
   );
-  const mockDelivery = new Delivery('del-1', 'tx-1', 'cust-1', 'Calle 1', 'Bogotá', 'Cundinamarca', '110111', 'PENDING', new Date());
+  const mockCustomer = new Customer(
+    'cust-1',
+    'John',
+    'john@example.com',
+    '300123',
+    new Date(),
+  );
+  const mockTransaction = new Transaction(
+    'tx-1',
+    'prod-1',
+    'cust-1',
+    1,
+    50000,
+    5000,
+    10000,
+    65000,
+    TransactionStatus.PENDING,
+    null,
+    'CARD',
+    new Date(),
+    new Date(),
+  );
+  const mockDelivery = new Delivery(
+    'del-1',
+    'tx-1',
+    'cust-1',
+    'Calle 1',
+    'Bogotá',
+    'Cundinamarca',
+    '110111',
+    'PENDING',
+    new Date(),
+  );
 
   const validDto = {
     productId: 'prod-1',
@@ -70,7 +118,9 @@ describe('CreateTransactionUseCase', () => {
 
     expect(result.isSuccess).toBe(true);
     expect(result.value.id).toBe('tx-1');
-    expect(transactionRepository.create).toHaveBeenCalledWith(
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const createMock = transactionRepository.create as jest.Mock;
+    expect(createMock).toHaveBeenCalledWith(
       expect.objectContaining({
         productId: 'prod-1',
         customerId: 'cust-1',
@@ -93,7 +143,9 @@ describe('CreateTransactionUseCase', () => {
     const result = await useCase.execute(validDto);
 
     expect(result.isSuccess).toBe(true);
-    expect(customerRepository.create).not.toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const createCustomerMock = customerRepository.create as jest.Mock;
+    expect(createCustomerMock).not.toHaveBeenCalled();
   });
 
   it('should fail when product not found', async () => {
@@ -115,7 +167,16 @@ describe('CreateTransactionUseCase', () => {
   });
 
   it('should fail when stock is insufficient', async () => {
-    const lowStockProduct = new Product('prod-1', 'Test', 'Desc', 50000, 'COP', 0, 'https://img.example.com/test.jpg', new Date());
+    const lowStockProduct = new Product(
+      'prod-1',
+      'Test',
+      'Desc',
+      50000,
+      'COP',
+      0,
+      'https://img.example.com/test.jpg',
+      new Date(),
+    );
     productRepository.findById.mockResolvedValue(Result.ok(lowStockProduct));
 
     const result = await useCase.execute(validDto);
@@ -126,7 +187,9 @@ describe('CreateTransactionUseCase', () => {
 
   it('should fail when customer lookup fails', async () => {
     productRepository.findById.mockResolvedValue(Result.ok(mockProduct));
-    customerRepository.findByEmail.mockResolvedValue(Result.fail('Customer lookup error'));
+    customerRepository.findByEmail.mockResolvedValue(
+      Result.fail('Customer lookup error'),
+    );
 
     const result = await useCase.execute(validDto);
 
@@ -137,7 +200,9 @@ describe('CreateTransactionUseCase', () => {
   it('should fail when customer creation fails', async () => {
     productRepository.findById.mockResolvedValue(Result.ok(mockProduct));
     customerRepository.findByEmail.mockResolvedValue(Result.ok(null));
-    customerRepository.create.mockResolvedValue(Result.fail('Create customer error'));
+    customerRepository.create.mockResolvedValue(
+      Result.fail('Create customer error'),
+    );
 
     const result = await useCase.execute(validDto);
 
@@ -148,7 +213,9 @@ describe('CreateTransactionUseCase', () => {
   it('should fail when transaction creation fails', async () => {
     productRepository.findById.mockResolvedValue(Result.ok(mockProduct));
     customerRepository.findByEmail.mockResolvedValue(Result.ok(mockCustomer));
-    transactionRepository.create.mockResolvedValue(Result.fail('TX create error'));
+    transactionRepository.create.mockResolvedValue(
+      Result.fail('TX create error'),
+    );
 
     const result = await useCase.execute(validDto);
 
@@ -176,7 +243,9 @@ describe('CreateTransactionUseCase', () => {
 
     await useCase.execute({ ...validDto, quantity: 3 });
 
-    expect(transactionRepository.create).toHaveBeenCalledWith(
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const createMockQty = transactionRepository.create as jest.Mock;
+    expect(createMockQty).toHaveBeenCalledWith(
       expect.objectContaining({
         amount: 150000, // 50000 * 3
         baseFee: 5000,

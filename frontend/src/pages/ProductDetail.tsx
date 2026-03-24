@@ -50,7 +50,7 @@ export default function ProductDetail() {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="w-full h-80 md:h-full object-cover min-h-[400px]"
+              className="w-full h-80 md:h-full object-cover min-h-100"
             />
             {/* Stock badge on image */}
             <div className="absolute top-4 left-4">
@@ -80,7 +80,7 @@ export default function ProductDetail() {
 
             {product.stock > 0 && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <label id="quantity-label" htmlFor="quantity" className="block text-sm font-semibold text-gray-700 mb-3">
                   Cantidad
                 </label>
                 <div className="flex items-center gap-3 mb-6">
@@ -91,7 +91,19 @@ export default function ProductDetail() {
                   >
                     −
                   </button>
-                  <span className="text-xl font-bold w-12 text-center text-gray-900">{qty}</span>
+                  <input
+                    id="quantity"
+                    type="number"
+                    value={qty}
+                    onChange={(e) => {
+                      const v = Math.max(1, Math.min(product.stock, Number(e.target.value) || 1));
+                      setQty(v);
+                    }}
+                    min={1}
+                    max={product.stock}
+                    aria-labelledby="quantity-label"
+                    className="text-xl font-bold w-12 text-center text-gray-900 border-0 outline-none bg-transparent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
                   <button
                     onClick={() => setQty(Math.min(product.stock, qty + 1))}
                     className="w-11 h-11 rounded-xl border-2 border-gray-200 flex items-center justify-center hover:border-[#5A3E9B]/30 hover:bg-[#5A3E9B]/5 transition-all text-lg font-bold text-gray-600"

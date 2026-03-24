@@ -19,8 +19,10 @@ export default function ProductList() {
     dispatch(resetCheckout());
   }, [dispatch]);
 
-  // Reset page when search changes
-  useEffect(() => { setPage(1); }, [search]);
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return items;
@@ -87,13 +89,13 @@ export default function ProductList() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Buscar productos..."
             className="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#5A3E9B] focus:border-[#5A3E9B] focus:bg-white transition-all text-sm"
           />
           {search && (
             <button
-              onClick={() => setSearch('')}
+              onClick={() => handleSearchChange('')}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +113,7 @@ export default function ProductList() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <p className="text-gray-500 text-lg">No se encontraron productos para "{search}"</p>
-          <button onClick={() => setSearch('')} className="mt-3 text-[#5A3E9B] hover:text-[#432C7A] font-medium text-sm">
+          <button onClick={() => handleSearchChange('')} className="mt-3 text-[#5A3E9B] hover:text-[#432C7A] font-medium text-sm">
             Limpiar búsqueda
           </button>
         </div>
@@ -125,8 +127,9 @@ export default function ProductList() {
             className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300 flex flex-col"
           >
             {/* Image */}
-            <div
-              className="relative aspect-[4/3] overflow-hidden bg-gray-50 cursor-pointer"
+            <button
+              type="button"
+              className="relative aspect-4/3 overflow-hidden bg-gray-50 cursor-pointer w-full"
               onClick={() => navigate(`/products/${product.id}`)}
             >
               <img
@@ -147,21 +150,23 @@ export default function ProductList() {
                   {product.stock > 0 ? `${product.stock} disponibles` : 'Agotado'}
                 </span>
               </div>
-            </div>
+            </button>
 
             {/* Content */}
             <div className="p-5 flex flex-col flex-1">
-              <h2
-                className="text-base font-bold text-gray-900 mb-1 cursor-pointer group-hover:text-[#5A3E9B] transition-colors"
+              <button
+                type="button"
+                className="text-base font-bold text-gray-900 mb-1 cursor-pointer group-hover:text-[#5A3E9B] transition-colors text-left"
                 onClick={() => navigate(`/products/${product.id}`)}
               >
                 {product.name}
-              </h2>
+              </button>
               <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed flex-1">
                 {product.description}
               </p>
               <p className="text-xl font-bold text-gray-900 mb-4">
                 {formatCurrency(product.price)}
+                <span className="text-xs font-medium text-gray-400 ml-1">{product.currency}</span>
               </p>
               <button
                 onClick={() => navigate(`/products/${product.id}`)}

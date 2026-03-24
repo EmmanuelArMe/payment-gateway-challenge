@@ -1,13 +1,13 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, type Middleware } from '@reduxjs/toolkit';
 import productReducer from './slices/productSlice';
 import checkoutReducer from './slices/checkoutSlice';
 
 // Middleware to persist checkout state in localStorage (resilience to refresh)
-const localStorageMiddleware = (store: { getState: () => RootState }) =>
-  (next: (action: unknown) => unknown) =>
-  (action: unknown) => {
+const localStorageMiddleware: Middleware = (store) =>
+  (next) =>
+  (action) => {
     const result = next(action);
-    const state = store.getState();
+    const state = store.getState() as RootState;
     try {
       const checkoutToPersist = {
         step: state.checkout.step,

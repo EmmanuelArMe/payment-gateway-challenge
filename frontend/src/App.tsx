@@ -9,7 +9,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-100 flex flex-col">
-        <header className="bg-gradient-to-r from-[#432C7A] to-[#5A3E9B] shadow-lg">
+        <header className="bg-linear-to-r from-[#432C7A] to-[#5A3E9B] shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity">
               <div className="w-9 h-9 bg-white/15 rounded-lg flex items-center justify-center backdrop-blur-sm">

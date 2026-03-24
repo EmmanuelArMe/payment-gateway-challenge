@@ -1,20 +1,18 @@
+import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    ...options,
+const httpClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+async function request<T>(url: string, options?: { method?: string; data?: unknown }): Promise<T> {
+  const response = await httpClient.request<T>({
+    url,
+    method: options?.method || 'GET',
+    data: options?.data,
   });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error((error as { message?: string }).message || `HTTP ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
+  return response.data;
 }
 
 export const api = {
@@ -35,7 +33,7 @@ export const api = {
   }) =>
     request<{ data: import('../types').Transaction }>('/api/transactions', {
       method: 'POST',
-      body: JSON.stringify(data),
+      data,
     }),
 
   processPayment: (
@@ -50,7 +48,7 @@ export const api = {
       `/api/transactions/${encodeURIComponent(transactionId)}/pay`,
       {
         method: 'POST',
-        body: JSON.stringify(data),
+        data,
       },
     ),
 
@@ -58,9 +56,7 @@ export const api = {
     request<{ data: import('../types').Transaction }>(`/api/transactions/${encodeURIComponent(id)}`),
 
   getAcceptanceToken: () =>
-    request<{ data: { presigned_acceptance: { acceptance_token: string } } }>(
-      '/api/payments/acceptance-token',
-    ),
+    request<{ data: string }>('/api/payments/acceptance-token'),
 
   tokenizeCard: (data: {
     number: string;
@@ -69,8 +65,8 @@ export const api = {
     expYear: string;
     cardHolder: string;
   }) =>
-    request<{ data: { id: string } }>('/api/payments/tokenize', {
+    request<{ data: string }>('/api/payments/tokenize', {
       method: 'POST',
-      body: JSON.stringify(data),
+      data,
     }),
 };

@@ -73,4 +73,24 @@ describe('productSlice', () => {
 
     expect(state.selectedProduct).toEqual(sampleProduct);
   });
+
+  it('handles fetchProductById.pending', () => {
+    const state = reducer(initialState, fetchProductById.pending('', 'prod-1'));
+
+    // pending is not explicitly handled so state remains unchanged
+    expect(state.loading).toBe(false);
+    expect(state.selectedProduct).toBeNull();
+  });
+
+  it('handles fetchProductById.rejected', () => {
+    const action = {
+      type: fetchProductById.rejected.type,
+      error: { message: 'Not found' },
+    };
+
+    const state = reducer(initialState, action);
+
+    // rejected is not explicitly handled so state remains unchanged
+    expect(state.selectedProduct).toBeNull();
+  });
 });

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { TransactionController } from '../controllers/transaction.controller.js';
+import { PaymentController } from '../controllers/payment.controller.js';
 import { CreateTransactionUseCase } from '../../application/use-cases/create-transaction.use-case.js';
 import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case.js';
 import { GetTransactionUseCase } from '../../application/use-cases/get-transaction.use-case.js';
@@ -16,7 +18,8 @@ import { PAYMENT_GATEWAY } from '../../domain/ports/outbound/payment-gateway.por
 import { ProductPrismaRepository } from '../adapters/persistence/product.repository.js';
 
 @Module({
-  controllers: [TransactionController],
+  imports: [HttpModule],
+  controllers: [TransactionController, PaymentController],
   providers: [
     PrismaService,
     CreateTransactionUseCase,

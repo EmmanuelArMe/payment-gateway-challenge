@@ -1,12 +1,22 @@
-import { GetCustomerUseCase, GetCustomerByEmailUseCase } from './get-customer.use-case';
+import {
+  GetCustomerUseCase,
+  GetCustomerByEmailUseCase,
+} from './get-customer.use-case';
 import { Result } from '../../shared/result';
 import { Customer } from '../../domain/entities/index';
+import { CustomerRepositoryPort } from '../../domain/ports/outbound/index';
 
 describe('GetCustomerUseCase', () => {
   let useCase: GetCustomerUseCase;
-  let customerRepository: any;
+  let customerRepository: jest.Mocked<CustomerRepositoryPort>;
 
-  const mockCustomer = new Customer('cust-1', 'John Doe', 'john@example.com', '3001234567', new Date());
+  const mockCustomer = new Customer(
+    'cust-1',
+    'John Doe',
+    'john@example.com',
+    '3001234567',
+    new Date(),
+  );
 
   beforeEach(() => {
     customerRepository = {
@@ -24,6 +34,7 @@ describe('GetCustomerUseCase', () => {
 
     expect(result.isSuccess).toBe(true);
     expect(result.value.fullName).toBe('John Doe');
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(customerRepository.findById).toHaveBeenCalledWith('cust-1');
   });
 
@@ -48,9 +59,15 @@ describe('GetCustomerUseCase', () => {
 
 describe('GetCustomerByEmailUseCase', () => {
   let useCase: GetCustomerByEmailUseCase;
-  let customerRepository: any;
+  let customerRepository: jest.Mocked<CustomerRepositoryPort>;
 
-  const mockCustomer = new Customer('cust-1', 'John Doe', 'john@example.com', '3001234567', new Date());
+  const mockCustomer = new Customer(
+    'cust-1',
+    'John Doe',
+    'john@example.com',
+    '3001234567',
+    new Date(),
+  );
 
   beforeEach(() => {
     customerRepository = {
@@ -68,7 +85,10 @@ describe('GetCustomerByEmailUseCase', () => {
 
     expect(result.isSuccess).toBe(true);
     expect(result.value.email).toBe('john@example.com');
-    expect(customerRepository.findByEmail).toHaveBeenCalledWith('john@example.com');
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(customerRepository.findByEmail).toHaveBeenCalledWith(
+      'john@example.com',
+    );
   });
 
   it('should fail when customer not found by email', async () => {

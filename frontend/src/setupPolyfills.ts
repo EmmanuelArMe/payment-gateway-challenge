@@ -1,5 +1,6 @@
-import { TextEncoder, TextDecoder } from 'util';
+/// <reference types="node" />
+import { TextEncoder, TextDecoder } from 'node:util';
 
-if (typeof globalThis.TextEncoder === 'undefined') {
+if (globalThis.TextEncoder === undefined) {
   Object.assign(globalThis, { TextEncoder, TextDecoder });
 }

@@ -1,9 +1,16 @@
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { of, throwError } from 'rxjs';
+import { AxiosResponse } from 'axios';
 import { WompiAdapter } from './wompi.adapter';
 
 describe('WompiAdapter', () => {
   let adapter: WompiAdapter;
   let configService: ConfigService;
+  let httpService: HttpService;
+
+  const mockAxiosResponse = <T>(data: T): AxiosResponse<T> =>
+    ({ data, status: 200, statusText: 'OK', headers: {}, config: {} }) as AxiosResponse<T>;
 
   beforeEach(() => {
     configService = {
@@ -12,14 +19,19 @@ describe('WompiAdapter', () => {
           WOMPI_API_URL: 'https://api-sandbox.co.uat.wompi.dev/v1',
           WOMPI_PUBLIC_KEY: 'public-key',
           WOMPI_PRIVATE_KEY: 'private-key',
+          WOMPI_INTEGRITY_KEY: 'integrity-key',
         };
 
         return values[key] ?? defaultValue ?? '';
       }),
     } as never;
 
-    adapter = new WompiAdapter(configService);
-    global.fetch = jest.fn();
+    httpService = {
+      get: jest.fn(),
+      post: jest.fn(),
+    } as never;
+
+    adapter = new WompiAdapter(configService, httpService);
   });
 
   afterEach(() => {
@@ -27,15 +39,17 @@ describe('WompiAdapter', () => {
   });
 
   it('gets acceptance token', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      json: jest.fn().mockResolvedValue({
-        data: {
-          presigned_acceptance: {
-            acceptance_token: 'acceptance-token',
+    (httpService.get as jest.Mock).mockReturnValue(
+      of(
+        mockAxiosResponse({
+          data: {
+            presigned_acceptance: {
+              acceptance_token: 'acceptance-token',
+            },
           },
-        },
-      }),
-    });
+        }),
+      ),
+    );
 
     const result = await adapter.getAcceptanceToken();
 
@@ -44,11 +58,13 @@ describe('WompiAdapter', () => {
   });
 
   it('tokenizes card', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      json: jest.fn().mockResolvedValue({
-        data: { id: 'card-token' },
-      }),
-    });
+    (httpService.post as jest.Mock).mockReturnValue(
+      of(
+        mockAxiosResponse({
+          data: { id: 'card-token' },
+        }),
+      ),
+    );
 
     const result = await adapter.tokenizeCard({
       number: '4242424242424242',
@@ -63,16 +79,18 @@ describe('WompiAdapter', () => {
   });
 
   it('creates payment transaction', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      json: jest.fn().mockResolvedValue({
-        data: {
-          id: 'wompi-1',
-          status: 'APPROVED',
-          reference: 'tx-1',
-          amount_in_cents: 6500000,
-        },
-      }),
-    });
+    (httpService.post as jest.Mock).mockReturnValue(
+      of(
+        mockAxiosResponse({
+          data: {
+            id: 'wompi-1',
+            status: 'APPROVED',
+            reference: 'tx-1',
+            amount_in_cents: 6500000,
+          },
+        }),
+      ),
+    );
 
     const result = await adapter.createTransaction({
       amountInCents: 6500000,
@@ -88,16 +106,18 @@ describe('WompiAdapter', () => {
   });
 
   it('gets payment transaction by id', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      json: jest.fn().mockResolvedValue({
-        data: {
-          id: 'wompi-1',
-          status: 'PENDING',
-          reference: 'tx-1',
-          amount_in_cents: 6500000,
-        },
-      }),
-    });
+    (httpService.get as jest.Mock).mockReturnValue(
+      of(
+        mockAxiosResponse({
+          data: {
+            id: 'wompi-1',
+            status: 'PENDING',
+            reference: 'tx-1',
+            amount_in_cents: 6500000,
+          },
+        }),
+      ),
+    );
 
     const result = await adapter.getTransaction('wompi-1');
 
@@ -106,9 +126,9 @@ describe('WompiAdapter', () => {
   });
 
   it('returns failure when gateway response is invalid', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      json: jest.fn().mockResolvedValue({ data: {} }),
-    });
+    (httpService.post as jest.Mock).mockReturnValue(
+      of(mockAxiosResponse({ data: {} })),
+    );
 
     const result = await adapter.createTransaction({
       amountInCents: 6500000,
@@ -121,5 +141,16 @@ describe('WompiAdapter', () => {
 
     expect(result.isFailure).toBe(true);
     expect(result.error).toBe('Failed to create payment transaction');
+  });
+
+  it('returns failure when http call throws', async () => {
+    (httpService.get as jest.Mock).mockReturnValue(
+      throwError(() => new Error('Network error')),
+    );
+
+    const result = await adapter.getAcceptanceToken();
+
+    expect(result.isFailure).toBe(true);
+    expect(result.error).toBe('Failed to communicate with payment gateway');
   });
 });
